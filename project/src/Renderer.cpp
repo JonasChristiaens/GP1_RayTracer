@@ -66,24 +66,26 @@ void Renderer::Render(Scene* pScene) const
 			if (closestHit.didHit)
 			{
 				//if hit, set final color to material color, else keep black
-				//finalColor = materials[closestHit.materialIndex]->Shade();
+				finalColor = materials[closestHit.materialIndex]->Shade();
+
 				for (int lightIdx{}; lightIdx < lights.size(); ++lightIdx)
 				{
 					Vector3 lightDirection{ LightUtils::GetDirectionToLight(lights[lightIdx], closestHit.origin) };
 					float hitToLightMagnitude{ lightDirection.Magnitude() };
 					Ray lightRay{ closestHit.origin + (closestHit.normal / 100.f), lightDirection.Normalized() };
 					lightRay.max = hitToLightMagnitude;
-					float sussyAmongusBallen{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
-					if (sussyAmongusBallen < 0)
-					{
-						sussyAmongusBallen = 0;
-					}
-					finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin) * sussyAmongusBallen;
 
-					/*if (pScene->DoesHit(lightRay))
+					float observedAreaMeasure{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
+					if (observedAreaMeasure < 0)
+					{
+						observedAreaMeasure = 0;
+					}
+					finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin) * observedAreaMeasure * colors::White;
+
+					if (pScene->DoesHit(lightRay) && m_ShadowsEnabled)
 					{
 						finalColor *= 0.5f;
-					}*/
+					}
 				}	
 
 				//verify T values

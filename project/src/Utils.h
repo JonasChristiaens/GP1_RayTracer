@@ -134,7 +134,6 @@ namespace dae
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
 			//todo W3
-
 			if (light.type == LightType::Point)
 			{
 				float irradiance{ light.intensity / ((light.origin - target).Magnitude() * (light.origin - target).Magnitude()) };

@@ -81,6 +81,7 @@ int main(int argc, char* args[])
 
 		//--------- Update ---------
 		pScene->Update(pTimer);
+		pRenderer->CycleLightingMode();
 
 		//--------- Render ---------
 		pRenderer->Render(pScene);
