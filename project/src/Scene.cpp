@@ -194,13 +194,23 @@ namespace dae {
 #pragma region SCENE W3
 	void Scene_W3::Initialize()
 	{
-		m_Camera.origin = {0.f, 3.f, -9.f};
+		m_Camera.origin = {0.f, 1.f, -5.f};
 		m_Camera.fovAngle = 45.f;
 
 		constexpr unsigned char matId_Solid_Red = 0;
 		const unsigned char matId_Solid_Blue = AddMaterial(new Material_SolidColor{ colors::Blue });
 		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
 
+		//Spheres
+		AddSphere({-0.75f, 1.0f, 0.0f}, 1.0f, matId_Solid_Red);
+		AddSphere({0.75f, 1.0f, 0.0f}, 1.0f, matId_Solid_Blue);
+
+		//Plane
+		AddPlane({ 0.0f, 0.0f, 0.0f }, {0.0f, 1.0f, 0.0f}, matId_Solid_Yellow);
+
+		//Light
+		AddPointLight({0.0f, 5.0f, 5.0f}, 25.0f, colors::White);
+		AddPointLight({0.0f, 2.5f, -5.0f}, 25.0f, colors::White);
 		/*const auto matCT_GrayRoughMetal = AddMaterial(new Material_CookTorrence({0.972f, 0.960f, 0.915f}, 1.0f, 1.0f));
 		const auto matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.0f, 0.6f));
 		const auto matCT_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.0f, 0.1f));
