@@ -14,23 +14,42 @@ namespace dae
 			//done week 1
 			Vector3 oc{ ray.origin - sphere.origin };
 			float A{ Vector3::Dot(ray.direction, ray.direction) };
-			float B{ Vector3::Dot(2 * ray.direction, oc) };
-			float C{ Vector3::Dot(oc, oc) - (sphere.radius * sphere.radius) };
-			float discriminant{ (B * B) - 4 * A * C };
+			float B{ Vector3::Dot((2 * ray.direction), oc) };
+			float C{ (Vector3::Dot(oc, oc)) - (sphere.radius * sphere.radius) };
+			float discriminant{ (B * B) - (4 * A * C) };
 
 			if (discriminant > 0)
 			{
 				hitRecord.didHit = true;
+				hitRecord.materialIndex = sphere.materialIndex;
+
 				float sqrtDiscriminant{ sqrt(discriminant) };
 				float denominator{ 2 * A };
 				
-				hitRecord.t = (-B - sqrtDiscriminant) / denominator;
+				float t_0{ (-B - sqrtDiscriminant) / denominator };
+				float t_1{ (-B + sqrtDiscriminant) / denominator };
+				//possible use to improve fps
+				//float t{ (-B - sqrtDiscriminant) / denominator >= ray.min ? (-B - sqrtDiscriminant) / denominator >= ray.min : (-B + sqrtDiscriminant) / denominator >= ray.min };
 
-				if (hitRecord.t < ray.min)
+
+				if (t_0 >= ray.min && t_0 < ray.max)
 				{
-					hitRecord.t = (-B + sqrtDiscriminant) / denominator;
+					hitRecord.t = t_0;
+					hitRecord.origin = ray.origin + (t_0 * ray.direction);
+					Vector3 pointDirection{ hitRecord.origin - sphere.origin };
+					hitRecord.normal = pointDirection.Normalized();
+
+					return true;
 				}
-				return true;
+				else if(t_1 >= ray.min && t_1 < ray.max)
+				{
+					hitRecord.t = t_1;
+					hitRecord.origin = ray.origin + (t_1 * ray.direction);
+					Vector3 pointDirection{ hitRecord.origin - sphere.origin };
+					hitRecord.normal = pointDirection.Normalized();
+
+					return true;
+				}
 			}
 
 			return false;
@@ -56,6 +75,9 @@ namespace dae
 				hitRecord.didHit = true;
 				hitRecord.t = t;
 				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.origin = ray.origin + (t * ray.direction);
+				hitRecord.normal = plane.normal;
+
 				return true;
 			}
 
@@ -104,15 +126,26 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
-			//todo W3
-			throw std::runtime_error("Not Implemented Yet");
-			return {};
+			//done in week 2
+			Vector3 shadowRay{ light.origin - origin };
+			return shadowRay;
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
 			//todo W3
-			throw std::runtime_error("Not Implemented Yet");
+
+			if (light.type == LightType::Point)
+			{
+				float irradiance{ light.intensity / ((light.origin - target).Magnitude() * (light.origin - target).Magnitude()) };
+				ColorRGB lightColor{ light.color * irradiance };
+
+				return lightColor;
+			}
+			else if (light.type == LightType::Directional)
+			{
+
+			}
 			return {};
 		}
 	}

@@ -36,16 +36,17 @@ namespace dae
 		Matrix CalculateCameraToWorld()
 		{
 			//done in week 2
-			Vector3 rightLocal{ Vector3::Cross(Vector3::UnitY, forward).Normalized() };
-			Vector3 upLocal{ Vector3::Cross(forward, Vector3::UnitX).Normalized() };
-			return Matrix{ {rightLocal, 0}, {upLocal, 0}, {forward, 0}, {origin, 1} };
+			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
+			up = Vector3::Cross(forward, right).Normalized();
+			return Matrix{ {right, 0}, {up, 0}, {forward, 0}, {origin, 1} };
 		}
 
 		void Update(Timer* pTimer)
 		{
 			const float deltaTime = pTimer->GetElapsed();
 			const float DegToRadCalculation{ (PI / 180.f) };
-			Matrix translationMatrix{ {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {origin, 1} };
+			const float movementSpeed{ 20.f };
+			const float rotationSpeed{ 20.f };
 
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
@@ -59,38 +60,43 @@ namespace dae
 			//Transforming camera's origin ( Movement )
 			if (pKeyboardState[SDL_SCANCODE_W])
 			{
-				translationMatrix *= Matrix::CreateTranslation(Vector3{ 0, 0, 1 });
+				origin += forward * movementSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_A])
 			{
-				translationMatrix *= Matrix::CreateTranslation(Vector3{ -1, 0, 0 });
+				origin -= right * movementSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_S])
 			{
-				translationMatrix *= Matrix::CreateTranslation(Vector3{ 0, 0, -1 });
+				origin -= forward * movementSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
-				translationMatrix *= Matrix::CreateTranslation(Vector3{ 1, 0, 0 });
+				origin += right * movementSpeed * deltaTime;
 			}
 			
 			//Transforming camera's forward vector ( Rotation )
 			if (mouseState == 4)
 			{
-				totalPitch += atan(mouseY / 20.f);
-				totalYaw += atan(mouseX / 20.f);
+				totalPitch += mouseY * rotationSpeed * deltaTime;
+				totalYaw += mouseX * rotationSpeed * deltaTime;
 			}
+			else if(mouseState == 1)
+			{
+				origin -= forward * mouseY * movementSpeed * deltaTime;
+				totalYaw += mouseX * rotationSpeed * deltaTime;
+			}
+			else if (mouseState == 5)
+			{
+				origin.y -= mouseY * movementSpeed * deltaTime;
+			}
+			
 			float totalPitchInRad{ totalPitch * DegToRadCalculation };
 			float totalYawInRad{ totalYaw * DegToRadCalculation };
-
 			Matrix rotationMatrix{ Matrix::CreateRotationX(totalPitchInRad) * Matrix::CreateRotationY(totalYawInRad) };
-			
-			rotationMatrix *= translationMatrix;
 
 			forward = rotationMatrix.TransformVector(Vector3::UnitZ);
 			forward.Normalize();
-
-			origin = Vector3::Project({ Vector3{translationMatrix[3].x, translationMatrix[3].y, translationMatrix[3].z} }, forward);
 			CalculateCameraToWorld();
 		}
 	};

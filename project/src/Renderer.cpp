@@ -31,6 +31,7 @@ void Renderer::Render(Scene* pScene) const
 	float aspectRatio{ float(m_Width) / m_Height };
 	float AngleInRadians{ camera.fovAngle * (PI/180.f)};
 	float FOV{ tan(AngleInRadians / 2) };
+	const Matrix cameraToWorld = camera.CalculateCameraToWorld();
 
 	for (int px{}; px < m_Width; ++px)
 	{
@@ -41,12 +42,11 @@ void Renderer::Render(Scene* pScene) const
 			float rayYValue{ (1.f - (2.f * ( (float(py) + 0.5f) / m_Height))) * FOV };
 			float rayZValue{ 1.f }; 
 
-			const Matrix cameraToWorld = camera.CalculateCameraToWorld();
-
 			Vector3 rayDirection{ rayXValue, rayYValue, rayZValue };
 			rayDirection = cameraToWorld.TransformVector(rayDirection);
-			Ray viewRay{ camera.origin, rayDirection.Normalized() };
+			Ray viewRay{ camera.origin, rayDirection.Normalized()};
 			
+
 			//Initial test to generate ray for each pixel of screen
 			//ColorRGB finalColor{rayDirection.x, rayDirection.y, rayDirection.z};
 
@@ -66,7 +66,21 @@ void Renderer::Render(Scene* pScene) const
 			if (closestHit.didHit)
 			{
 				//if hit, set final color to material color, else keep black
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				//finalColor = materials[closestHit.materialIndex]->Shade();
+				for (int lightIdx{}; lightIdx < lights.size(); ++lightIdx)
+				{
+					finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin);
+
+					Vector3 lightDirection{ LightUtils::GetDirectionToLight(lights[lightIdx], closestHit.origin) };
+					float hitToLightMagnitude{ lightDirection.Magnitude() };
+					Ray lightRay{ closestHit.origin + (closestHit.normal / 100.f), lightDirection.Normalized() };
+					lightRay.max = hitToLightMagnitude;
+
+					if (pScene->DoesHit(lightRay))
+					{
+						finalColor *= 0.5f;
+					}
+				}	
 
 				//verify T values
 				/*const float scaled_t = (closestHit.t - 50.f) / 40.f;
@@ -92,4 +106,22 @@ void Renderer::Render(Scene* pScene) const
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+void dae::Renderer::CycleLightingMode()
+{
+	//Keyboard Input
+	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+
+	if (pKeyboardState[SDL_SCANCODE_F2])
+	{
+		ToggleShadows();
+	}
+
+	if (pKeyboardState[SDL_SCANCODE_F3])
+	{
+		int lightningState{ int(m_CurrentLightingMode) };
+
+		m_CurrentLightingMode = LightingMode((lightningState + 1) % 4);
+	}
 }
