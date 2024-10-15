@@ -77,9 +77,29 @@ void Renderer::Render(Scene* pScene) const
 						continue;
 					}
 					
-					//Ergb * BRDFrgb * Dot(normal, lightdirection)
-					finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin) 
-						* materials[closestHit.materialIndex]->Shade(closestHit, invLightDirection, -viewRay.direction) * observedAreaMeasure;
+					switch (m_CurrentLightMode)
+					{
+					case dae::Renderer::LightMode::ObservedArea:
+						//Dot(normal, lightdirection)
+						finalColor += observedAreaMeasure * colors::White;
+						break;
+					case dae::Renderer::LightMode::Radiance:
+						//Ergb
+						finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin);
+						break;
+					case dae::Renderer::LightMode::BRDF:
+						//BRDFrgb
+						finalColor += materials[closestHit.materialIndex]->Shade(closestHit, invLightDirection, -viewRay.direction);
+						break;
+					case dae::Renderer::LightMode::Combined:
+						//Ergb * BRDFrgb * Dot(normal, lightdirection)
+						finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin)
+							* materials[closestHit.materialIndex]->Shade(closestHit, invLightDirection, -viewRay.direction) * observedAreaMeasure;
+						break;
+					default:
+						break;
+					}
+					
 				}	
 			}
 
@@ -110,13 +130,6 @@ void Renderer::ToggleShadows()
 
 void dae::Renderer::CycleLightingMode()
 {
-	//Keyboard Input
-	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
-
-	if (pKeyboardState[SDL_SCANCODE_F3])
-	{
-		int lightState{ int(m_CurrentLightMode) };
-
-		m_CurrentLightMode = LightMode((lightState + 1) % 4);
-	}
+	int lightState{ int(m_CurrentLightMode) };
+	m_CurrentLightMode = LightMode((lightState + 1) % 4);
 }
