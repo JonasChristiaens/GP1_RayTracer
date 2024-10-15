@@ -39,7 +39,7 @@ namespace dae
 		{
 			//done in week 3
 			Vector3 reflect{ l - ((2 * Vector3::Dot(n, l)) * n)};
-			float cosAngle{ std::max(Vector3::Dot(reflect, v), 0.0f) };
+			float cosAngle{ Vector3::Dot(reflect, v) };
 			float phongSpecularReflection{ ks * pow(cosAngle, exp) };
 			return { phongSpecularReflection * colors::White };
 		}
