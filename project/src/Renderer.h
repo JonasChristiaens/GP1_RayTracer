@@ -24,10 +24,10 @@ namespace dae
 		bool SaveBufferToImage() const;
 
 		void CycleLightingMode();
-		void ToggleShadows() { m_ShadowsEnabled = !m_ShadowsEnabled; }
+		void ToggleShadows();
 
 	private:
-		enum class LightingMode
+		enum class LightMode
 		{
 			ObservedArea, //Lambert Cosine Law
 			Radiance, //Incident Radiance
@@ -35,7 +35,7 @@ namespace dae
 			Combined //ObservedArea*Radiance*BRDF
 		};
 
-		LightingMode m_CurrentLightingMode{ LightingMode::Combined };
+		LightMode m_CurrentLightMode{ LightMode::Combined };
 		bool m_ShadowsEnabled{ true };
 
 		SDL_Window* m_pWindow{};

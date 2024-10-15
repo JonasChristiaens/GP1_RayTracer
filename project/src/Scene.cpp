@@ -213,6 +213,11 @@ namespace dae {
 		AddPlane(Vector3{ 5.0f, 0.0f, 0.0f }, Vector3{ -1.0f, 0.0f, 0.0f }, matLambert_GrayBlue); //RIGHT
 		AddPlane(Vector3{ -5.0f, 0.0f, 0.0f }, Vector3{ 1.0f, 0.0f, 0.0f }, matLambert_GrayBlue); //LEFT
 
+		//Temporary Lambert-Phong Spheres & Materials
+		const auto matLambertPhong1 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 3.0f));
+		const auto matLambertPhong2 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 15.0f));
+		const auto matLambertPhong3 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 50.0f));
+
 		//Spheres
 		AddSphere(Vector3{-1.75f, 1.0f, 0.0f}, 0.75f, matCT_GrayRoughMetal);
 		AddSphere(Vector3{0.0f, 1.0f, 0.0f}, 0.75f, matCT_GrayMediumMetal);
@@ -227,9 +232,9 @@ namespace dae {
 		AddPointLight({ 2.5f, 2.5f, -5.0f }, 50.f, ColorRGB{0.34f, 0.47f, 0.68f});
 
 		/*
-		==========
-		Test Scene
-		==========
+		============
+		Test Scene 1
+		============
 
 		constexpr unsigned char matId_Solid_Red = 0;
 		const unsigned char matId_Solid_Blue = AddMaterial(new Material_SolidColor{ colors::Blue });
@@ -244,7 +249,28 @@ namespace dae {
 
 		//Light
 		AddPointLight({0.0f, 5.0f, 5.0f}, 25.0f, colors::White);
-		AddPointLight({0.0f, 2.5f, -5.0f}, 25.0f, colors::White);*/
+		AddPointLight({0.0f, 2.5f, -5.0f}, 25.0f, colors::White);
+
+		============
+		Test Scene 2
+		============
+
+		m_Camera.origin = { 0.f, 1.f, -5.f };
+		m_Camera.fovAngle = 45.f;
+
+		const auto matLambert_Red = AddMaterial(new Material_Lambert(colors::Red, 1.f));
+		const auto matLambertPhong_Blue = AddMaterial(new Material_LambertPhong(colors::Blue, 1.f, 1.f, 60.f));
+		const auto matLambert_Yellow = AddMaterial(new Material_Lambert(colors::Yellow, 1.f));
+
+		//Spheres
+		AddSphere({ -.75f, 1.f, 0.f }, 1.f, matLambert_Red);
+		AddSphere({ .75f, 1.f, 0.f }, 1.f, matLambertPhong_Blue);
+
+		//Plane
+		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f,0.f }, matLambert_Yellow);
+
+		AddPointLight({ 0.f, 5.f, 5.f }, 25.f, colors::White);
+		AddPointLight({ 0.f, 2.5f, -5.f }, 25.f, colors::White);*/
 	}
 #pragma endregion
 }

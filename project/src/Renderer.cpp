@@ -45,53 +45,42 @@ void Renderer::Render(Scene* pScene) const
 			Vector3 rayDirection{ rayXValue, rayYValue, rayZValue };
 			rayDirection = cameraToWorld.TransformVector(rayDirection);
 			Ray viewRay{ camera.origin, rayDirection.Normalized()};
-			
-
-			//Initial test to generate ray for each pixel of screen
-			//ColorRGB finalColor{rayDirection.x, rayDirection.y, rayDirection.z};
 
 			//Color to write to color buffer & hit verification
 			ColorRGB finalColor{};
 			HitRecord closestHit{};
-			
-			//Testing Sphere and Plane Hit Implementation
-			/*Sphere testSphere{{0.f, 0.f, 100.f}, 50.f, 0};
-			GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
-			Plane testPlane{ {0.f, -50.f, 0.f}, {0.f, 1.f, 0.f}, 0 };
-			GeometryUtils::HitTest_Plane(testPlane, viewRay, closestHit);*/
 			
 			//Rendering full scene
 			pScene->GetClosestHit(viewRay, closestHit);
 
 			if (closestHit.didHit)
 			{
-				//if hit, set final color to material color, else keep black
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				//finalColor should be initialized black
+				finalColor = {};
 
 				for (int lightIdx{}; lightIdx < lights.size(); ++lightIdx)
 				{
-					Vector3 lightDirection{ LightUtils::GetDirectionToLight(lights[lightIdx], closestHit.origin) };
-					float hitToLightMagnitude{ lightDirection.Magnitude() };
-					Ray lightRay{ closestHit.origin + (closestHit.normal / 100.f), lightDirection.Normalized() };
-					lightRay.max = hitToLightMagnitude;
+					Vector3 invLightDirection{ LightUtils::GetDirectionToLight(lights[lightIdx], closestHit.origin) };
+					float distanceToLight{ invLightDirection.Normalize() };
 
-					float observedAreaMeasure{ Vector3::Dot(closestHit.normal, lightDirection.Normalized()) };
-					if (observedAreaMeasure < 0)
+					Ray lightRay{ closestHit.origin + (invLightDirection * 0.01f), invLightDirection };
+					lightRay.max = distanceToLight;
+
+					float observedAreaMeasure{ Vector3::Dot(closestHit.normal, invLightDirection) };
+					if (observedAreaMeasure <= 0)
 					{
-						observedAreaMeasure = 0;
+						continue;
 					}
-					finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin) * observedAreaMeasure * colors::White;
 
 					if (pScene->DoesHit(lightRay) && m_ShadowsEnabled)
 					{
-						finalColor *= 0.5f;
+						continue;
 					}
+					
+					//Ergb * BRDFrgb * Dot(normal, lightdirection)
+					finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin) 
+						* materials[closestHit.materialIndex]->Shade(closestHit, invLightDirection, -viewRay.direction) * observedAreaMeasure;
 				}	
-
-				//verify T values
-				/*const float scaled_t = (closestHit.t - 50.f) / 40.f;
-				const float scaled_t = closestHit.t / 500.f;
-				finalColor = {scaled_t, scaled_t, scaled_t};*/
 			}
 
 			//Update Color in Buffer
@@ -114,20 +103,20 @@ bool Renderer::SaveBufferToImage() const
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
 }
 
+void Renderer::ToggleShadows()
+{
+	m_ShadowsEnabled = !m_ShadowsEnabled;
+}
+
 void dae::Renderer::CycleLightingMode()
 {
 	//Keyboard Input
 	const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
-	if (pKeyboardState[SDL_SCANCODE_F2])
-	{
-		ToggleShadows();
-	}
-
 	if (pKeyboardState[SDL_SCANCODE_F3])
 	{
-		int lightningState{ int(m_CurrentLightingMode) };
+		int lightState{ int(m_CurrentLightMode) };
 
-		m_CurrentLightingMode = LightingMode((lightningState + 1) % 4);
+		m_CurrentLightMode = LightMode((lightState + 1) % 4);
 	}
 }
