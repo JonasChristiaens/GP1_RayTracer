@@ -124,20 +124,42 @@ namespace dae
 
 		void CalculateNormals()
 		{
-			throw std::runtime_error("Not Implemented Yet");
+			for (int idx{}; idx < indices.size(); idx += 3)
+			{
+				int ind0{ indices[idx] };
+				int ind1{ indices[idx] };
+				int ind2{ indices[idx] };
+
+				Vector3 v0{ positions[ind0] };
+				Vector3 v1{ positions[ind1] };
+				Vector3 v2{ positions[ind2] };
+
+				Vector3 A{ v1 - v0 };
+				Vector3 B{ v2 - v0 };
+
+				Vector3 normal{ Vector3::Cross(A, B) };
+				normal.Normalize();
+
+				normals.push_back(normal);
+			}
 		}
 
 		void UpdateTransforms()
 		{
-			throw std::runtime_error("Not Implemented Yet");
-			//Calculate Final Transform 
-			//const auto finalTransform = ...
+			//Calculate Final Transform
+			const auto transformMatrix{ translationTransform * rotationTransform * scaleTransform };
 
-			//Transform Positions (positions > transformedPositions)
-			//...
-
-			//Transform Normals (normals > transformedNormals)
-			//...
+			for (int idx{}; idx < normals.size(); ++idx)
+			{
+				//Transform Normals (normals > transformedNormals)
+				transformedNormals.push_back(transformMatrix.TransformVector(Vector4{ normals[idx], 0 }));
+			}
+			
+			for (int idx{}; idx < positions.size(); ++idx)
+			{
+				//Transform Positions(positions > transformedPositions)
+				transformedNormals.push_back(transformMatrix.TransformVector(Vector4{ positions[idx], 0 }));
+			}
 		}
 	};
 #pragma endregion

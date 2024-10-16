@@ -94,9 +94,62 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			throw std::runtime_error("Not Implemented Yet");
-			return false;
+			//done in week 5
+			//calculating ray with plane interesection
+			float planeIntersection{ Vector3::Dot(triangle.normal, ray.direction) };
+
+			//plane logic for distance t, applied to triangles
+			float numerator{ Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) };
+			float denominator{ Vector3::Dot(ray.direction, triangle.normal) };
+			float t{ numerator / denominator };
+
+			//backface culling and shadows
+			if (!ignoreHitRecord)
+			{
+				//back-face or front-face
+				if (planeIntersection > 0 && triangle.cullMode == TriangleCullMode::BackFaceCulling
+					or planeIntersection < 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling) return false;
+			}
+			else {
+				//back-face shadows or front-face shadows
+				if (planeIntersection < 0 && triangle.cullMode == TriangleCullMode::BackFaceCulling
+					or planeIntersection > 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling)	return false;
+			}
+
+			if (AreEqual(planeIntersection, 0))
+			{
+				return false;
+			}
+			if (t < ray.min or t > ray.max)
+			{
+				return false;
+			}
+
+			//calculate point of intersection
+			Vector3 intersectionPoint{ ray.origin + (ray.direction * t) };
+			
+			//Add all points to a vector
+			Vector3 triangleVerteces[3]{ triangle.v0, triangle.v1, triangle.v2 };
+
+			for (int vertexIdx{}; vertexIdx < 3; ++vertexIdx)
+			{
+				Vector3 e{ triangleVerteces[(vertexIdx + 1) % 3] - triangleVerteces[vertexIdx] };
+				Vector3 p{ intersectionPoint - triangleVerteces[vertexIdx] };
+
+				float checker{ Vector3::Dot(Vector3::Cross(e, p), triangle.normal) };
+				if (checker < 0)
+				{
+					return false;
+				}
+			}
+
+			//fill in hitrecord
+			hitRecord.didHit = true;
+			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.normal = triangle.normal;
+			hitRecord.origin = triangle.v0;
+			hitRecord.t = t;
+			return true;
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
@@ -109,7 +162,6 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			throw std::runtime_error("Not Implemented Yet");
 			return false;
 		}
 
