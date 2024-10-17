@@ -298,22 +298,22 @@ namespace dae {
 		AddPlane(Vector3{ 5.0f, 0.0f, 0.0f }, Vector3{ -1.0f, 0.0f, 0.0f }, matLambert_GrayBlue); //RIGHT
 		AddPlane(Vector3{ -5.0f, 0.0f, 0.0f }, Vector3{ 1.0f, 0.0f, 0.0f }, matLambert_GrayBlue); //LEFT
 
-		/*Triangle(temp)
+		//Triangle(temp)
 		auto triangle = Triangle{ {-0.75f, 0.5f, 0.0f}, {-0.75f, 2.0f, 0.0f}, {0.75f, 0.5f, 0.0f} };
 		triangle.cullMode = TriangleCullMode::BackFaceCulling;
 		triangle.materialIndex = matLambert_White;
 
-		m_Triangles.emplace_back(triangle);*/
+		m_Triangles.emplace_back(triangle);
 
-		const auto triangleMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
-		triangleMesh->positions = { {-0.75f, -1.0f, 0.0f}, {-0.75f, 1.0f, 0.0f}, {0.75f, 1.0f, 1.0f}, {0.75f, -1.0f, 0.0f} };
-		triangleMesh->indices = {
-			0, 1, 2, //triangle 1
-			0, 2, 3 //triangle 2
-		};
+		//const auto triangleMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		//triangleMesh->positions = { {-0.75f, -1.0f, 0.0f}, {-0.75f, 1.0f, 0.0f}, {0.75f, 1.0f, 1.0f}, {0.75f, -1.0f, 0.0f} };
+		//triangleMesh->indices = {
+		//	0, 1, 2, //triangle 1
+		//	0, 2, 3 //triangle 2
+		//};
 
-		triangleMesh->CalculateNormals();
-		triangleMesh->UpdateTransforms();
+		/*triangleMesh->CalculateNormals();
+		triangleMesh->UpdateTransforms();*/
 
 		//Light
 		AddPointLight({ 0.0f, 5.0f, 5.0f }, 50.f, ColorRGB{ 1.0f, 0.61f, 0.45f }); //Backlight
