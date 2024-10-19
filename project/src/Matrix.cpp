@@ -103,7 +103,7 @@ namespace dae {
 
 	Matrix Matrix::CreateTranslation(float x, float y, float z)
 	{
-		return Matrix{ {1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {x, y, z, 1} };
+		return CreateTranslation( Vector3{x, y, z} );
 	}
 
 	Matrix Matrix::CreateTranslation(const Vector3& t)
@@ -114,6 +114,7 @@ namespace dae {
 	Matrix Matrix::CreateRotationX(float pitch)
 	{
 		return Matrix{ {1, 0, 0, 0}, {0, cos(pitch), sin(pitch), 0}, {0, -sin(pitch), cos(pitch), 0}, {0, 0, 0, 1} };
+		
 	}
 
 	Matrix Matrix::CreateRotationY(float yaw)

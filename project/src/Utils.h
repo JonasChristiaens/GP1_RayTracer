@@ -98,11 +98,6 @@ namespace dae
 			//calculating ray with plane interesection
 			float planeIntersection{ Vector3::Dot(triangle.normal, ray.direction) };
 
-			//plane logic for distance t, applied to triangles
-			float numerator{ Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) };
-			float denominator{ Vector3::Dot(ray.direction, triangle.normal) };
-			float t{ numerator / denominator };
-
 			//backface culling and shadows
 			if (!ignoreHitRecord)
 			{
@@ -120,6 +115,12 @@ namespace dae
 			{
 				return false;
 			}
+
+			//plane logic for distance t, applied to triangles
+			float numerator{ Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) };
+			float denominator{ Vector3::Dot(ray.direction, triangle.normal) };
+			float t{ numerator / denominator };
+
 			if (t < ray.min or t > ray.max)
 			{
 				return false;
@@ -144,11 +145,14 @@ namespace dae
 			}
 
 			//fill in hitrecord
-			hitRecord.didHit = true;
-			hitRecord.materialIndex = triangle.materialIndex;
-			hitRecord.normal = triangle.normal;
-			hitRecord.origin = triangle.v0;
-			hitRecord.t = t;
+			if (!ignoreHitRecord)
+			{
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = triangle.materialIndex;
+				hitRecord.normal = triangle.normal;
+				hitRecord.origin = ray.origin + (ray.direction * t);
+				hitRecord.t = t;
+			}
 			return true;
 		}
 
@@ -161,8 +165,26 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			return false;
+			//done in week 5
+			bool returnState{};
+			HitRecord closestHit{};
+
+			for (int indicesIdx{}; indicesIdx < mesh.indices.size(); indicesIdx += 3)
+			{
+				//adding all verteces individually
+				Vector3 v0{ mesh.transformedPositions[mesh.indices[indicesIdx]] };
+				Vector3 v1{ mesh.transformedPositions[mesh.indices[indicesIdx + 1]] };
+				Vector3 v2{ mesh.transformedPositions[mesh.indices[indicesIdx + 2]] };
+
+				//making new triangle with verteces and setting cullmode and materialindex of new triangle to mesh values
+				Triangle triangle{ v0, v1, v2, mesh.transformedNormals[indicesIdx / 3] };
+				triangle.cullMode = mesh.cullMode;
+				triangle.materialIndex = mesh.materialIndex;
+
+				if (HitTest_Triangle(triangle, ray, closestHit, ignoreHitRecord)) returnState = true;
+				if (closestHit.t < hitRecord.t and closestHit.didHit) hitRecord = closestHit;
+			}
+			return returnState;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)

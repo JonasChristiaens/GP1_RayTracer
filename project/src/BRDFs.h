@@ -38,7 +38,7 @@ namespace dae
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
 			//done in week 3
-			Vector3 reflect{ l - ((2 * Vector3::Dot(n, l)) * n)};
+			Vector3 reflect{ l - ((2 * Vector3::Dot(l, n)) * n)};
 			float cosAngle{ Vector3::Dot(reflect, v) };
 			float phongSpecularReflection{ ks * pow(cosAngle, exp) };
 			return { phongSpecularReflection * colors::White };

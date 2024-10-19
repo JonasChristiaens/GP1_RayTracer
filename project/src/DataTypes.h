@@ -127,8 +127,8 @@ namespace dae
 			for (int idx{}; idx < indices.size(); idx += 3)
 			{
 				int ind0{ indices[idx] };
-				int ind1{ indices[idx] };
-				int ind2{ indices[idx] };
+				int ind1{ indices[idx + 1] };
+				int ind2{ indices[idx + 2] };
 
 				Vector3 v0{ positions[ind0] };
 				Vector3 v1{ positions[ind1] };
@@ -138,7 +138,7 @@ namespace dae
 				Vector3 B{ v2 - v0 };
 
 				Vector3 normal{ Vector3::Cross(A, B) };
-				normal.Normalize();
+				normal.Normalized();
 
 				normals.push_back(normal);
 			}
@@ -147,18 +147,35 @@ namespace dae
 		void UpdateTransforms()
 		{
 			//Calculate Final Transform
-			const auto transformMatrix{ translationTransform * rotationTransform * scaleTransform };
+			const auto transformMatrix{  scaleTransform * rotationTransform * translationTransform };
 
-			for (int idx{}; idx < normals.size(); ++idx)
+			if (transformedNormals.size() == 0)
 			{
-				//Transform Normals (normals > transformedNormals)
-				transformedNormals.push_back(transformMatrix.TransformVector(Vector4{ normals[idx], 0 }));
+				for (int normalsIdx{}; normalsIdx < normals.size(); ++normalsIdx)
+				{
+					//Transform Normals (normals > transformedNormals)
+					transformedNormals.push_back(transformMatrix.TransformVector(Vector4{ normals[normalsIdx], 0 }));
+				}
+
+				for (int positionsIdx{}; positionsIdx < positions.size(); ++positionsIdx)
+				{
+					//Transform Positions(positions > transformedPositions)
+					transformedPositions.push_back(transformMatrix.TransformPoint(Vector4{ positions[positionsIdx], 0 }));
+				}
 			}
-			
-			for (int idx{}; idx < positions.size(); ++idx)
+			else
 			{
-				//Transform Positions(positions > transformedPositions)
-				transformedNormals.push_back(transformMatrix.TransformVector(Vector4{ positions[idx], 0 }));
+				for (int normalsIdx{}; normalsIdx < normals.size(); ++normalsIdx)
+				{
+					//Transform Normals (normals > transformedNormals)
+					transformedNormals[normalsIdx] = transformMatrix.TransformVector(Vector4{ normals[normalsIdx], 0 });
+				}
+
+				for (int positionsIdx{}; positionsIdx < positions.size(); ++positionsIdx)
+				{
+					//Transform Positions(positions > transformedPositions)
+					transformedPositions[positionsIdx] = transformMatrix.TransformPoint(Vector4{ positions[positionsIdx], 0 });
+				}
 			}
 		}
 	};

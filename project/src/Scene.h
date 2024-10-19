@@ -52,7 +52,8 @@ namespace dae
 		std::vector<Material*> m_Materials{};
 
 		//Temp
-		std::vector<Triangle> m_Triangles{};
+		//std::vector<Triangle> m_Triangles{};
+
 
 		Camera m_Camera{};
 
@@ -96,6 +97,7 @@ namespace dae
 		void Initialize() override;
 	};
 
+	//WEEK 3 Test Scene
 	class Scene_W3 final : public Scene
 	{
 	public:
@@ -110,6 +112,7 @@ namespace dae
 		void Initialize() override;
 	};
 
+	//WEEK 4 Test Scene
 	class Scene_W4 final : public Scene
 	{
 	public:
@@ -122,5 +125,9 @@ namespace dae
 		Scene_W4& operator=(Scene_W4&&) noexcept = delete;
 
 		void Initialize() override;
+		void Update(Timer* pTimer) override;
+	private:
+		TriangleMesh* pMesh{ nullptr };
+		TriangleMesh* m_Meshes[3]{};
 	};
 }
