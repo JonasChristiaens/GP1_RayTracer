@@ -304,16 +304,16 @@ namespace dae {
 		AddPlane(Vector3{ 5.0f, 0.0f, 0.0f }, Vector3{ -1.0f, 0.0f, 0.0f }, matLambert_GrayBlue); //RIGHT
 		AddPlane(Vector3{ -5.0f, 0.0f, 0.0f }, Vector3{ 1.0f, 0.0f, 0.0f }, matLambert_GrayBlue); //LEFT
 
-		////Spheres
-		//AddSphere(Vector3{ -1.75f, 1.0f, 0.0f }, 0.75f, matCT_GrayRoughMetal);
-		//AddSphere(Vector3{ 0.0f, 1.0f, 0.0f }, 0.75f, matCT_GrayMediumMetal);
-		//AddSphere(Vector3{ 1.75f, 1.0f, 0.0f }, 0.75f, matCT_GraySmoothMetal);
-		//AddSphere(Vector3{ -1.75f, 3.0f, 0.0f }, 0.75f, matCT_GrayRoughPlastic);
-		//AddSphere(Vector3{ 0.0f, 3.0f, 0.0f }, 0.75f, matCT_GrayMediumPlastic);
-		//AddSphere(Vector3{ 1.75f, 3.0f, 0.0f }, 0.75f, matCT_GraySmoothPlastic);
+		//Spheres
+		AddSphere(Vector3{ -1.75f, 1.0f, 0.0f }, 0.75f, matCT_GrayRoughMetal);
+		AddSphere(Vector3{ 0.0f, 1.0f, 0.0f }, 0.75f, matCT_GrayMediumMetal);
+		AddSphere(Vector3{ 1.75f, 1.0f, 0.0f }, 0.75f, matCT_GraySmoothMetal);
+		AddSphere(Vector3{ -1.75f, 3.0f, 0.0f }, 0.75f, matCT_GrayRoughPlastic);
+		AddSphere(Vector3{ 0.0f, 3.0f, 0.0f }, 0.75f, matCT_GrayMediumPlastic);
+		AddSphere(Vector3{ 1.75f, 3.0f, 0.0f }, 0.75f, matCT_GraySmoothPlastic);
 
 		//Triangles
-		/*const Triangle baseTriangle{ Vector3{-.75f, 1.5f, 0.f}, Vector3{.75f, 0.f, 0.f}, Vector3{-.75f, 0.f, 0.f} };
+		const Triangle baseTriangle{ Vector3{-.75f, 1.5f, 0.f}, Vector3{.75f, 0.f, 0.f}, Vector3{-.75f, 0.f, 0.f} };
 
 		m_Meshes[0] = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
 		m_Meshes[0]->AppendTriangle(baseTriangle, true);
@@ -328,18 +328,19 @@ namespace dae {
 		m_Meshes[2] = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
 		m_Meshes[2]->AppendTriangle(baseTriangle, true);
 		m_Meshes[2]->Translate({ 1.75f, 4.5f, 0.f });
-		m_Meshes[2]->UpdateTransforms();*/
+		m_Meshes[2]->UpdateTransforms();
 
-		pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		//Bunny scene
+		/*pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
 		pMesh->indices = {
 		0, 1, 2, //triangle 1
-		0, 2, 3 //triangle 2
+		0, 2, 3 //triangle 2z
 		};
 		Utils::ParseOBJ("Resources/lowpoly_bunny.obj", pMesh->positions, pMesh->normals, pMesh->indices);
 		
 		pMesh->Scale({ 2.f, 2.f, 2.f });
 		
-		pMesh->UpdateTransforms();
+		pMesh->UpdateTransforms();*/
 
 
 		//Light
@@ -354,11 +355,11 @@ namespace dae {
 		Scene::Update(pTimer);
 
 		const auto yawAngle{ (cos(pTimer->GetTotal()) + 1.f) / 2.f * PI_2 };
-		/*for (const auto m : m_Meshes)
+		for (const auto m : m_Meshes)
 		{
 			m->RotateY(yawAngle);
 			m->UpdateTransforms();
-		}*/
+		}
 	}
 #pragma endregion
 }
