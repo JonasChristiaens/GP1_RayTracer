@@ -1,4 +1,5 @@
 #pragma once
+#include "Maths.h"
 
 #include <cstdint>
 
@@ -21,7 +22,7 @@ namespace dae
 		Renderer& operator=(Renderer&&) noexcept = delete;
 
 		void Render(Scene* pScene) const;
-		void RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Matrix cameraToWorld, const Vector3 cameraOrigin) const;
+		void RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Matrix &cameraToWorld, const Vector3 &cameraOrigin) const;
 		bool SaveBufferToImage() const;
 
 		void CycleLightingMode();

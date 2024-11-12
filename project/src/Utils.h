@@ -162,19 +162,50 @@ namespace dae
 			return HitTest_Triangle(triangle, ray, temp, true);
 		}
 #pragma endregion
-#pragma region TriangeMesh HitTest
+#pragma region TriangleMesh HitTest
+		inline bool SlabTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
+		{
+			// X
+			float tx1 = ( mesh.transformedMinAABB.x - ray.origin.x ) / ray.direction.x;
+			float tx2 = ( mesh.transformedMaxAABB.x - ray.origin.x ) / ray.direction.x;
+
+			float tmin = std::min(tx1, tx2);
+			float tmax = std::max(tx1, tx2);
+
+			// Y
+			float ty1 = ( mesh.transformedMinAABB.y - ray.origin.x ) / ray.direction.x;
+			float ty2 = ( mesh.transformedMaxAABB.y - ray.origin.x ) / ray.direction.x;
+
+			tmin = std::max( tmin, std::min(ty1, ty2) );
+			tmax = std::min( tmax, std::max(ty1, ty2) );
+
+			// Z
+			float tz1 = ( mesh.transformedMinAABB.z - ray.origin.z ) / ray.direction.z;
+			float tz2 = ( mesh.transformedMaxAABB.z - ray.origin.z ) / ray.direction.z;
+			
+			tmin = std::max( tmin, std::min(tz1, tz2) );
+			tmax = std::min( tmax, std::max(tz1, tz2) );
+
+			return tmax > 0 && tmax >= tmin;
+		}
+
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//done in week 5
+			//slab test
+			if (!SlabTest_TriangleMesh(mesh, ray)) return false;
+			Triangle triangle{};
+
+
 			bool returnState{};
 			HitRecord closestHit{};
 
 			for (int indicesIdx{}; indicesIdx < mesh.indices.size(); indicesIdx += 3)
 			{
 				//adding all verteces individually
-				Vector3 v0{ mesh.transformedPositions[mesh.indices[indicesIdx]] };
-				Vector3 v1{ mesh.transformedPositions[mesh.indices[indicesIdx + 1]] };
-				Vector3 v2{ mesh.transformedPositions[mesh.indices[indicesIdx + 2]] };
+				const Vector3 v0{ mesh.transformedPositions[mesh.indices[indicesIdx]] };
+				const Vector3 v1{ mesh.transformedPositions[mesh.indices[indicesIdx + 1]] };
+				const Vector3 v2{ mesh.transformedPositions[mesh.indices[indicesIdx + 2]] };
 
 				//making new triangle with verteces and setting cullmode and materialindex of new triangle to mesh values
 				Triangle triangle{ v0, v1, v2, mesh.transformedNormals[indicesIdx / 3] };

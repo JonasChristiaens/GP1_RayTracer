@@ -63,19 +63,19 @@ void Renderer::Render(Scene* pScene) const
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Matrix cameraToWorld, const Vector3 cameraOrigin) const
+void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Matrix &cameraToWorld, const Vector3 &cameraOrigin) const
 {
 	auto& materials{ pScene->GetMaterials() };
-	auto& lights = pScene->GetLights();
-	const uint32_t px{ pixelIndex % m_Width }, py{ pixelIndex % m_Width };
+	auto& lights{ pScene->GetLights() };
+	const uint32_t px{ pixelIndex % m_Width }, py{ pixelIndex / m_Width };
 
 	float rx{ px + 0.5f }, ry{ py + 0.5f };
-	float cx{ (2 * (rx / float(m_Width)) - 1) * aspectRatio * fov};
+	float cx{ (2 * (rx / float(m_Width)) - 1) * aspectRatio * fov };
 	float cy{ (1 - (2 * (ry / float(m_Height)))) * fov };
 
-	Vector3 rayDirection{ rx, cx, cy };
+	Vector3 rayDirection{ cx, cy, 1.0f };
 	rayDirection = cameraToWorld.TransformVector(rayDirection);
-	Ray viewRay{ cameraOrigin, rayDirection.Normalized()};
+	Ray viewRay{ cameraOrigin, rayDirection.Normalized() };
 
 	//Color to write to color buffer & hit verification
 	ColorRGB finalColor{};
@@ -98,20 +98,14 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 			lightRay.max = distanceToLight;
 
 			float observedAreaMeasure{ Vector3::Dot(closestHit.normal, invLightDirection) };
-			if (observedAreaMeasure <= 0)
-			{
-				continue;
-			}
-			if (pScene->DoesHit(lightRay) && m_ShadowsEnabled)
-			{
-				continue;
-			}
+			if (observedAreaMeasure <= 0.f) continue;
+			if (pScene->DoesHit(lightRay) && m_ShadowsEnabled) continue;
 
 			switch (m_CurrentLightMode)
 			{
 			case dae::Renderer::LightMode::ObservedArea:
 				//Dot(normal, lightdirection)
-				finalColor += observedAreaMeasure * colors::White;
+				finalColor += observedAreaMeasure * ColorRGB{ 1.f, 1.f, 1.f };
 				break;
 			case dae::Renderer::LightMode::Radiance:
 				//Ergb
@@ -123,13 +117,12 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 				break;
 			case dae::Renderer::LightMode::Combined:
 				//Ergb * BRDFrgb * Dot(normal, lightdirection)
-				finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin)
-					* materials[closestHit.materialIndex]->Shade(closestHit, invLightDirection, -viewRay.direction) * observedAreaMeasure;
+				finalColor += LightUtils::GetRadiance(lights[lightIdx], closestHit.origin) *
+					materials[closestHit.materialIndex]->Shade(closestHit, invLightDirection, -viewRay.direction) * observedAreaMeasure;
 				break;
 			default:
 				break;
 			}
-
 		}
 	}
 
