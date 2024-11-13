@@ -16,14 +16,39 @@
 
 using namespace dae;
 
+enum class WeeklyScenes
+{
+	SphereScene,
+	BunnyScene,
+	count
+};
+
 void ShutDown(SDL_Window* pWindow)
 {
 	SDL_DestroyWindow(pWindow);
 	SDL_Quit();
 }
 
+void PrintSettings()
+{
+	std::cout << "\tCamera controls" << std::endl;
+	std::cout << "===========================\n" << std::endl;
+	std::cout << "Rclick : rotate camera" << std::endl;
+	std::cout << "Lclick : move along x & z axis" << std::endl;
+	std::cout << "L&Rclick : move along y axis" << std::endl;
+	std::cout << "WASD : Move camera\n" << std::endl;
+	std::cout << "\tSettings" << std::endl;
+	std::cout << "===========================\n" << std::endl;
+	std::cout << "X : Take a screenshot" << std::endl;
+	std::cout << "F2 : Toggle Shadows" << std::endl;
+	std::cout << "F3 : Cycle Lighting Mode" << std::endl;
+	std::cout << "F4 : Cycle between Scenes\n" << std::endl;
+}
+
 int main(int argc, char* args[])
 {
+	PrintSettings();
+
 	//Unreferenced parameters
 	(void)argc;
 	(void)args;
@@ -47,12 +72,12 @@ int main(int argc, char* args[])
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
 
-	//const auto pScene = new Scene_W1();
-	//const auto pScene = new Scene_W2();
-	//const auto pScene = new Scene_W3();
-	const auto pScene = new Scene_W4();
-	pScene->Initialize();
-
+	const auto pBunnyScene = new Scene_Bunny();
+	pBunnyScene->Initialize();
+	const auto pSphereScene = new Scene_W4();
+	pSphereScene->Initialize();
+	
+	WeeklyScenes currentScene{ WeeklyScenes::SphereScene };
 	//Start loop
 	pTimer->Start();
 
@@ -83,15 +108,34 @@ int main(int argc, char* args[])
 				if (e.key.keysym.scancode == SDL_SCANCODE_F3)
 					pRenderer->CycleLightingMode();
 
+				if (e.key.keysym.scancode == SDL_SCANCODE_F4)
+				{
+					int current{ int(currentScene) };
+					currentScene = WeeklyScenes((current + 1) % int(WeeklyScenes::count));
+				}
 				break;
 			}
 		}
 
-		//--------- Update ---------
-		pScene->Update(pTimer);
+		switch (currentScene)
+		{
+		case WeeklyScenes::SphereScene:
+			//--------- Update ---------
+			pSphereScene->Update(pTimer);
 
-		//--------- Render ---------
-		pRenderer->Render(pScene);
+			//--------- Render ---------
+			pRenderer->Render(pSphereScene);
+			break;
+		case WeeklyScenes::BunnyScene:
+			//--------- Update ---------
+			pBunnyScene->Update(pTimer);
+
+			//--------- Render ---------
+			pRenderer->Render(pBunnyScene);
+			break;
+		default:
+			break;
+		}
 
 		//--------- Timer ---------
 		pTimer->Update();
@@ -115,7 +159,8 @@ int main(int argc, char* args[])
 	pTimer->Stop();
 
 	//Shutdown "framework"
-	delete pScene;
+	delete pBunnyScene;
+	delete pSphereScene;
 	delete pRenderer;
 	delete pTimer;
 

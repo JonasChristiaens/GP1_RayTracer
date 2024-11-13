@@ -173,8 +173,8 @@ namespace dae
 			float tmax = std::max(tx1, tx2);
 
 			// Y
-			float ty1 = ( mesh.transformedMinAABB.y - ray.origin.x ) / ray.direction.x;
-			float ty2 = ( mesh.transformedMaxAABB.y - ray.origin.x ) / ray.direction.x;
+			float ty1 = ( mesh.transformedMinAABB.y - ray.origin.y ) / ray.direction.y;
+			float ty2 = ( mesh.transformedMaxAABB.y - ray.origin.y ) / ray.direction.y;
 
 			tmin = std::max( tmin, std::min(ty1, ty2) );
 			tmax = std::min( tmax, std::max(ty1, ty2) );
@@ -194,8 +194,6 @@ namespace dae
 			//done in week 5
 			//slab test
 			if (!SlabTest_TriangleMesh(mesh, ray)) return false;
-			Triangle triangle{};
-
 
 			bool returnState{};
 			HitRecord closestHit{};
@@ -232,8 +230,16 @@ namespace dae
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
 			//done in week 2
-			Vector3 shadowRay{ light.origin - origin };
-			return shadowRay;
+			if (light.type == LightType::Point )
+			{
+				Vector3 shadowRay{ light.origin - origin };
+				return shadowRay;
+			}
+			/*else if (light.type == LightType::Directional)
+			{
+				return Vector;
+			}*/
+			
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)

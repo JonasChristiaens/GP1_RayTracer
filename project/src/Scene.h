@@ -51,10 +51,6 @@ namespace dae
 		std::vector<Light> m_Lights{};
 		std::vector<Material*> m_Materials{};
 
-		//Temp
-		//std::vector<Triangle> m_Triangles{};
-
-
 		Camera m_Camera{};
 
 		Sphere* AddSphere(const Vector3& origin, float radius, unsigned char materialIndex = 0);
@@ -127,7 +123,24 @@ namespace dae
 		void Initialize() override;
 		void Update(Timer* pTimer) override;
 	private:
-		TriangleMesh* pMesh{ nullptr };
 		TriangleMesh* m_Meshes[3]{};
+	};
+
+	//WEEK 4 Bunny Scene
+	class Scene_Bunny final : public Scene
+	{
+	public:
+		Scene_Bunny() = default;
+		~Scene_Bunny() override = default;
+
+		Scene_Bunny(const Scene_Bunny&) = delete;
+		Scene_Bunny(Scene_Bunny&&) noexcept = delete;
+		Scene_Bunny& operator=(const Scene_Bunny&) = delete;
+		Scene_Bunny& operator=(Scene_Bunny&&) noexcept = delete;
+
+		void Initialize() override;
+		void Update(Timer* pTimer) override;
+	private:
+		TriangleMesh* pMesh{ nullptr };
 	};
 }
