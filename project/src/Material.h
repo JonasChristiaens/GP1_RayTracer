@@ -128,7 +128,7 @@ namespace dae
 			ColorRGB specular{ (F * D * G) / (4.0f * Vector3::Dot(v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal)) };
 
 			//determine kd (cancel out/set to 0 if its a metal)
-			ColorRGB kd{ m_Metalness == 0.0f ? ColorRGB{ 1.0f, 1.0f, 1.0f } - F : colors::Black };
+			ColorRGB kd{ m_Metalness == 0.0f ? ColorRGB{ 1.0f, 1.0f, 1.0f } - F : ColorRGB{ 0.0f, 0.0f, 0.0f } };
 			
 			//calculate diffuse
 			ColorRGB diffuse{ BRDF::Lambert(kd, m_Albedo) };

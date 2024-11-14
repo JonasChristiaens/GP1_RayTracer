@@ -18,10 +18,8 @@ namespace dae
 		{
 		}
 
-
 		Vector3 origin{};
 		float fovAngle{ 90.f };
-
 		
 		Vector3 forward{ Vector3::UnitZ };
 		Vector3 up{ Vector3::UnitY };
@@ -44,7 +42,6 @@ namespace dae
 		void Update(Timer* pTimer)
 		{
 			const float deltaTime = pTimer->GetElapsed();
-			const float DegToRadCalculation{ (PI / 180.f) };
 			const float movementSpeed{ 20.f };
 			const float rotationSpeed{ 20.f };
 
@@ -90,10 +87,7 @@ namespace dae
 			{
 				origin.y -= mouseY * movementSpeed * deltaTime;
 			}
-			
-			float totalPitchInRad{ totalPitch * DegToRadCalculation };
-			float totalYawInRad{ totalYaw * DegToRadCalculation };
-			Matrix rotationMatrix{ Matrix::CreateRotationX(totalPitchInRad) * Matrix::CreateRotationY(totalYawInRad) };
+			Matrix rotationMatrix{ Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS) };
 
 			forward = rotationMatrix.TransformVector(Vector3::UnitZ);
 			forward.Normalize();

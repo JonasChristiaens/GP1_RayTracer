@@ -71,8 +71,8 @@ namespace dae
 			float a{ roughness * roughness };
 			float dotNh{ Vector3::Dot(n, h) };
 			
-			float something{ Square(dotNh) * (Square(a) - 1.0f) + 1.0f };
-			float denominator{ PI * Square(something)};
+			float nhFactor{ Square(dotNh) * (Square(a) - 1.0f) + 1.0f };
+			float denominator{ PI * Square(nhFactor)};
 
 			float result{ Square(a) / denominator };
 			return result;

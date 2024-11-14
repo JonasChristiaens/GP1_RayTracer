@@ -335,6 +335,7 @@ namespace dae {
 		AddPointLight({ -2.5f, 5.0f, -5.0f }, 70.f, ColorRGB{ 1.0f, 0.8f, 0.45f }); //Front Light left
 		AddPointLight({ 2.5f, 2.5f, -5.0f }, 50.f, ColorRGB{ 0.34f, 0.47f, 0.68f });
 
+		//AddDirectionalLight({ 0.f, 3.f, -1.f }, 50.f, ColorRGB{ 1.0f, 0.61f, 0.45f });
 	}
 
 	void Scene_W4::Update(Timer* pTimer)

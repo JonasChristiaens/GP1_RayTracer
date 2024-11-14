@@ -12,47 +12,27 @@ namespace dae
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//done week 1
-			Vector3 oc{ ray.origin - sphere.origin };
-			float A{ Vector3::Dot(ray.direction, ray.direction) };
-			float B{ Vector3::Dot((2 * ray.direction), oc) };
-			float C{ (Vector3::Dot(oc, oc)) - (sphere.radius * sphere.radius) };
-			float discriminant{ (B * B) - (4 * A * C) };
+			const Vector3 oc{ ray.origin - sphere.origin };
+			const float B{ Vector3::Dot((2 * ray.direction), oc) };
+			const float C{ (Vector3::Dot(oc, oc)) - (sphere.radius * sphere.radius) };
+			const float discriminant{ Square(B) - (4 * C)};
 
-			if (discriminant > 0)
+			if (discriminant < 0) return false;
+
+			const float sqrtDiscriminant{ sqrt(discriminant) };
+			float t{ (-B - sqrtDiscriminant) / 2 >= ray.min ? (-B - sqrtDiscriminant) / 2 : (-B + sqrtDiscriminant) / 2 };
+
+			if (t > ray.max || t < ray.min) return false;
+
+			if (!ignoreHitRecord) 
 			{
+				hitRecord.t = t;
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = sphere.materialIndex;
-
-				float sqrtDiscriminant{ sqrt(discriminant) };
-				float denominator{ 2 * A };
-				
-				float t_0{ (-B - sqrtDiscriminant) / denominator };
-				float t_1{ (-B + sqrtDiscriminant) / denominator };
-				//possible use to improve fps
-				//float t{ (-B - sqrtDiscriminant) / denominator >= ray.min ? (-B - sqrtDiscriminant) / denominator >= ray.min : (-B + sqrtDiscriminant) / denominator >= ray.min };
-
-
-				if (t_0 >= ray.min && t_0 < ray.max)
-				{
-					hitRecord.t = t_0;
-					hitRecord.origin = ray.origin + (t_0 * ray.direction);
-					Vector3 pointDirection{ hitRecord.origin - sphere.origin };
-					hitRecord.normal = pointDirection.Normalized();
-
-					return true;
-				}
-				else if(t_1 >= ray.min && t_1 < ray.max)
-				{
-					hitRecord.t = t_1;
-					hitRecord.origin = ray.origin + (t_1 * ray.direction);
-					Vector3 pointDirection{ hitRecord.origin - sphere.origin };
-					hitRecord.normal = pointDirection.Normalized();
-
-					return true;
-				}
+				hitRecord.origin = ray.origin + (t * ray.direction);
+				hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 			}
-
-			return false;
+			return true;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -66,22 +46,23 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//done in week 1
-			float numerator{ Vector3::Dot((plane.origin - ray.origin), plane.normal) };
-			float denominator{ Vector3::Dot(ray.direction, plane.normal) };
-			float t{ numerator / denominator };
+			const float denominator{ Vector3::Dot(ray.direction, plane.normal) };
+			if (denominator > 0) return false;
 
-			if (t >= ray.min and t < ray.max)
+			const float numerator{ Vector3::Dot((plane.origin - ray.origin), plane.normal) };
+			const float t{ numerator / denominator };
+
+			if (t > ray.max || t < ray.min) return false;
+
+			if (!ignoreHitRecord)
 			{
-				hitRecord.didHit = true;
 				hitRecord.t = t;
+				hitRecord.didHit = true;
 				hitRecord.materialIndex = plane.materialIndex;
 				hitRecord.origin = ray.origin + (t * ray.direction);
 				hitRecord.normal = plane.normal;
-
-				return true;
 			}
-
-			return false;
+			return true;
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
@@ -96,7 +77,7 @@ namespace dae
 		{
 			//done in week 5
 			//calculating ray with plane interesection
-			float planeIntersection{ Vector3::Dot(triangle.normal, ray.direction) };
+			const float planeIntersection{ Vector3::Dot(triangle.normal, ray.direction) };
 
 			//backface culling and shadows
 			if (!ignoreHitRecord)
@@ -111,20 +92,14 @@ namespace dae
 					or planeIntersection > 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling)	return false;
 			}
 
-			if (AreEqual(planeIntersection, 0))
-			{
-				return false;
-			}
+			if (AreEqual(planeIntersection, 0))return false;
 
 			//plane logic for distance t, applied to triangles
-			float numerator{ Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) };
-			float denominator{ Vector3::Dot(ray.direction, triangle.normal) };
-			float t{ numerator / denominator };
+			const float numerator{ Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) };
+			const float denominator{ Vector3::Dot(ray.direction, triangle.normal) };
+			const float t{ numerator / denominator };
 
-			if (t < ray.min or t > ray.max)
-			{
-				return false;
-			}
+			if (t < ray.min or t > ray.max)return false;
 
 			//calculate point of intersection
 			Vector3 intersectionPoint{ ray.origin + (ray.direction * t) };
@@ -137,21 +112,18 @@ namespace dae
 				Vector3 e{ triangleVerteces[(vertexIdx + 1) % 3] - triangleVerteces[vertexIdx] };
 				Vector3 p{ intersectionPoint - triangleVerteces[vertexIdx] };
 
-				float checker{ Vector3::Dot(Vector3::Cross(e, p), triangle.normal) };
-				if (checker < 0)
-				{
-					return false;
-				}
+				if (Vector3::Dot(Vector3::Cross(e, p), triangle.normal) < 0.0f) return false;
 			}
 
 			//fill in hitrecord
 			if (!ignoreHitRecord)
 			{
-				hitRecord.didHit = true;
-				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.normal = triangle.normal;
-				hitRecord.origin = ray.origin + (ray.direction * t);
 				hitRecord.t = t;
+				hitRecord.didHit = true;
+				hitRecord.normal = triangle.normal;
+				hitRecord.materialIndex = triangle.materialIndex;
+				hitRecord.origin = ray.origin + (ray.direction * t);
+
 			}
 			return true;
 		}
@@ -235,10 +207,11 @@ namespace dae
 				Vector3 shadowRay{ light.origin - origin };
 				return shadowRay;
 			}
-			/*else if (light.type == LightType::Directional)
+
+			if (light.type == LightType::Directional)
 			{
-				return Vector;
-			}*/
+				return light.direction;
+			}
 			
 		}
 
@@ -252,11 +225,13 @@ namespace dae
 
 				return lightColor;
 			}
-			else if (light.type == LightType::Directional)
-			{
 
+			if (light.type == LightType::Directional)
+			{
+				return { light.color * light.intensity };
 			}
-			return {};
+
+			return{};
 		}
 	}
 
