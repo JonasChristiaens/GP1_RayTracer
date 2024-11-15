@@ -129,22 +129,22 @@ namespace dae
 
 		void CalculateNormals()
 		{
-			for (int idx{}; idx < indices.size(); idx += 3)
+			//clear existing normals
+			normals.clear();
+
+			//loop through triangles and calculate normals
+			for (size_t idx{}; idx < indices.size(); idx += 3)
 			{
-				int ind0{ indices[idx] };
-				int ind1{ indices[idx + 1] };
-				int ind2{ indices[idx + 2] };
+				const Vector3 v0{ positions[indices[idx]] };
+				const Vector3 v1{ positions[indices[idx + 1]] };
+				const Vector3 v2{ positions[indices[idx + 2]] };
 
-				Vector3 v0{ positions[ind0] };
-				Vector3 v1{ positions[ind1] };
-				Vector3 v2{ positions[ind2] };
-
+				//calculate normal for this triangle
 				Vector3 A{ v1 - v0 };
 				Vector3 B{ v2 - v0 };
+				Vector3 normal{ Vector3::Cross(A, B).Normalized() };
 
-				Vector3 normal{ Vector3::Cross(A, B) };
-				normal.Normalized();
-
+				//assign same normal to all vertices of the triangle
 				normals.push_back(normal);
 			}
 		}

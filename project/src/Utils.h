@@ -12,18 +12,21 @@ namespace dae
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//done week 1
-			const Vector3 oc{ ray.origin - sphere.origin };
-			const float B{ Vector3::Dot((2 * ray.direction), oc) };
-			const float C{ (Vector3::Dot(oc, oc)) - (sphere.radius * sphere.radius) };
-			const float discriminant{ Square(B) - (4 * C)};
+			const Vector3 L{ ray.origin - sphere.origin };
+			const float B{ Vector3::Dot((ray.direction), L) };
+			const float C{ (Vector3::Dot(L, L)) - (sphere.radius * sphere.radius) };
+
+			//calculate discriminant
+			const float discriminant{ Square(B) - C };
 
 			if (discriminant < 0) return false;
 
-			const float sqrtDiscriminant{ sqrt(discriminant) };
-			float t{ (-B - sqrtDiscriminant) / 2 >= ray.min ? (-B - sqrtDiscriminant) / 2 : (-B + sqrtDiscriminant) / 2 };
+			const float sqrtDiscriminant{ sqrtf(discriminant) };
+			float t{ (-B - sqrtDiscriminant) >= ray.min ? (-B - sqrtDiscriminant) : (-B + sqrtDiscriminant) };
 
 			if (t > ray.max || t < ray.min) return false;
 
+			//only calculate hit record if needed
 			if (!ignoreHitRecord) 
 			{
 				hitRecord.t = t;
@@ -47,13 +50,17 @@ namespace dae
 		{
 			//done in week 1
 			const float denominator{ Vector3::Dot(ray.direction, plane.normal) };
+
+			//ray is parallel to plane
 			if (denominator > 0) return false;
 
+			//calculate intersection distance
 			const float numerator{ Vector3::Dot((plane.origin - ray.origin), plane.normal) };
 			const float t{ numerator / denominator };
 
 			if (t > ray.max || t < ray.min) return false;
 
+			//only calculate hit record if needed
 			if (!ignoreHitRecord)
 			{
 				hitRecord.t = t;
@@ -76,55 +83,62 @@ namespace dae
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//done in week 5
-			//calculating ray with plane interesection
-			const float planeIntersection{ Vector3::Dot(triangle.normal, ray.direction) };
+			//cache frequently used values
+			const Vector3& dir = ray.direction;
+			const float planeIntersection = Vector3::Dot(triangle.normal, dir);
 
-			//backface culling and shadows
+			//early culling check
 			if (!ignoreHitRecord)
 			{
-				//back-face or front-face
-				if (planeIntersection > 0 && triangle.cullMode == TriangleCullMode::BackFaceCulling
-					or planeIntersection < 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling) return false;
+				if ((planeIntersection > 0 && triangle.cullMode == TriangleCullMode::BackFaceCulling) ||
+					(planeIntersection < 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling))
+					return false;
 			}
-			else {
-				//back-face shadows or front-face shadows
-				if (planeIntersection < 0 && triangle.cullMode == TriangleCullMode::BackFaceCulling
-					or planeIntersection > 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling)	return false;
-			}
-
-			if (AreEqual(planeIntersection, 0))return false;
-
-			//plane logic for distance t, applied to triangles
-			const float numerator{ Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) };
-			const float denominator{ Vector3::Dot(ray.direction, triangle.normal) };
-			const float t{ numerator / denominator };
-
-			if (t < ray.min or t > ray.max)return false;
-
-			//calculate point of intersection
-			Vector3 intersectionPoint{ ray.origin + (ray.direction * t) };
-			
-			//Add all points to a vector
-			Vector3 triangleVerteces[3]{ triangle.v0, triangle.v1, triangle.v2 };
-
-			for (int vertexIdx{}; vertexIdx < 3; ++vertexIdx)
+			else
 			{
-				Vector3 e{ triangleVerteces[(vertexIdx + 1) % 3] - triangleVerteces[vertexIdx] };
-				Vector3 p{ intersectionPoint - triangleVerteces[vertexIdx] };
-
-				if (Vector3::Dot(Vector3::Cross(e, p), triangle.normal) < 0.0f) return false;
+				if ((planeIntersection < 0 && triangle.cullMode == TriangleCullMode::BackFaceCulling) ||
+					(planeIntersection > 0 && triangle.cullMode == TriangleCullMode::FrontFaceCulling))
+					return false;
 			}
 
-			//fill in hitrecord
+			if (AreEqual(planeIntersection, 0)) return false;
+
+			//calculate intersection distance
+			const float t = Vector3::Dot((triangle.v0 - ray.origin), triangle.normal) / planeIntersection;
+
+			//early distance check
+			if (t < ray.min || t > ray.max) return false;
+
+			//calculate intersection point once and reuse
+			const Vector3 intersectionPoint = ray.origin + (dir * t);
+
+			//create e and p
+			const Vector3 e0 = triangle.v1 - triangle.v0;
+			const Vector3 e1 = triangle.v2 - triangle.v1;
+			const Vector3 e2 = triangle.v0 - triangle.v2;
+
+			const Vector3 p0 = intersectionPoint - triangle.v0;
+			const Vector3 p1 = intersectionPoint - triangle.v1;
+			const Vector3 p2 = intersectionPoint - triangle.v2;
+
+			//perform edge tests
+			if (Vector3::Dot(Vector3::Cross(e0, p0), triangle.normal) < 0.0f ||
+				Vector3::Dot(Vector3::Cross(e1, p1), triangle.normal) < 0.0f ||
+				Vector3::Dot(Vector3::Cross(e2, p2), triangle.normal) < 0.0f)
+				return false;
+
+			//only update hit record if needed
 			if (!ignoreHitRecord)
 			{
 				hitRecord.t = t;
 				hitRecord.didHit = true;
 				hitRecord.normal = triangle.normal;
 				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.origin = ray.origin + (ray.direction * t);
 
+				//reuse already calculated point
+				hitRecord.origin = intersectionPoint;  
 			}
+
 			return true;
 		}
 
@@ -198,7 +212,7 @@ namespace dae
 
 	namespace LightUtils
 	{
-		//Direction from target to light
+		//direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
 			//done in week 2

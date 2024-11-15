@@ -14,16 +14,14 @@ namespace dae
 		{
 			//done in week 3
 			ColorRGB perfectDiffuseReflectance{ cd * kd };
-			ColorRGB lambert{ perfectDiffuseReflectance / PI };
-			return lambert;
+			return { perfectDiffuseReflectance / PI };
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
 			//done in week 3
 			ColorRGB perfectDiffuseReflectance{ cd * kd };
-			ColorRGB lambert{ perfectDiffuseReflectance / PI };
-			return lambert;
+			return { perfectDiffuseReflectance / PI };
 		}
 
 		/**
@@ -40,8 +38,8 @@ namespace dae
 			//done in week 3
 			Vector3 reflect{ l - ((2 * Vector3::Dot(l, n)) * n)};
 			float cosAngle{ Vector3::Dot(reflect, v) };
-			float phongSpecularReflection{ ks * pow(cosAngle, exp) };
-			return { phongSpecularReflection * colors::White };
+			float phongSpecularReflection{ ks * powf(cosAngle, exp) };
+			return { phongSpecularReflection * ColorRGB{ 1.0f, 1.0f, 1.0f } };
 		}
 
 		/**
@@ -55,7 +53,7 @@ namespace dae
 		{
 			//done in week 3
 			float dotHv{ Vector3::Dot(h, v) };
-			return f0 + ( (ColorRGB{ 1.0f, 1.0f, 1.0f } - f0) * std::powf((1.0f - dotHv), 5) );
+			return { f0 + ((ColorRGB{ 1.0f, 1.0f, 1.0f } - f0) * std::powf((1.0f - dotHv), 5)) };
 		}
 
 		/**
@@ -74,8 +72,7 @@ namespace dae
 			float nhFactor{ Square(dotNh) * (Square(a) - 1.0f) + 1.0f };
 			float denominator{ PI * Square(nhFactor)};
 
-			float result{ Square(a) / denominator };
-			return result;
+			return { Square(a) / denominator };
 		}
 
 
@@ -95,8 +92,7 @@ namespace dae
 			float numerator{ Vector3::Dot(n, v) };
 			float denominator{ (numerator * (1.0f - k)) + k };
 
-			float result{ numerator / denominator };
-			return result;
+			return { numerator / denominator };
 		}
 
 		/**
@@ -113,8 +109,7 @@ namespace dae
 			float masking{ GeometryFunction_SchlickGGX(n, v, roughness) };
 			float shadowing{ GeometryFunction_SchlickGGX(n, l, roughness) };
 
-			float approximation{ masking * shadowing };
-			return approximation;
+			return { masking * shadowing };
 		}
 
 	}
